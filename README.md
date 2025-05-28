@@ -15,6 +15,7 @@ Follow these steps to get a development environment running:
 2.  **Install dependencies:**
     ```bash
     pip install django
+    pip install mysql
     ```
 
 3.  **Apply migrations:**
