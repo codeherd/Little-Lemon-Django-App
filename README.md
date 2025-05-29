@@ -16,6 +16,7 @@ Follow these steps to get a development environment running:
     ```bash
     pip install django
     pip install mysql
+    pip install djangorestframework
     ```
 
 3.  **Apply migrations:**
