@@ -22,6 +22,7 @@ Follow these steps to get a development environment running:
 
 3.  **Apply migrations:**
     ```bash
+    python manage.py makemigrations
     python manage.py migrate
     ```
 
