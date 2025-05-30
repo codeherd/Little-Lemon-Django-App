@@ -17,6 +17,7 @@ Follow these steps to get a development environment running:
     pip install django
     pip install mysql
     pip install djangorestframework
+    pip install djoser
     ```
 
 3.  **Apply migrations:**
