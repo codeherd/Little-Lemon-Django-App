@@ -40,3 +40,11 @@ Follow these steps to get a development environment running:
 6.  **Access the application:**
     Open your web browser and go to `http://127.0.0.1:8000/` (or the specific app URL like `/restaurant/`).
     Access the Django Admin at `http://127.0.0.1:8000/admin/`.
+    Other API paths that peers can check:
+    `/restaurant/`
+    `/restaurant/menu/`
+    `/restaurant/menu/id` replace id with the corresponding number
+    `/restaurant/booking/tables/`
+    `/auth/users/`
+    `/api-token-auth/` not meant for retrieving (GET). make POST calls with this in Insomnia instead to get token
+    `/auth/token/login/` token create
