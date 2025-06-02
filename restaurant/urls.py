@@ -4,6 +4,11 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='home'),
-    path('menu/', views.MenuItemView.as_view(), name='menu-list'),
-    path('menu/<int:pk>', views.SingleMenuItemView.as_view()),
+    path('about/', views.about, name="about"),
+    path('book/', views.book, name="book"),
+    path('menu/', views.menu, name="menu"),
+    path('bookings/', views.bookings, name='bookings'),
+    path('reservations/', views.reservations, name='reservations'),
+    path('api/menu/', views.MenuItemView.as_view(), name='menu-list'),
+    path('api/menu/<int:pk>', views.SingleMenuItemView.as_view()),
 ]
