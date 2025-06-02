@@ -43,9 +43,9 @@ Follow these steps to get a development environment running:
     Other API paths that peers can check:
     ```bash
     `/restaurant/`
-    `/restaurant/menu/`
-    `/restaurant/menu/id` replace id with the corresponding number
-    `/restaurant/booking/tables/`
+    `/restaurant/api/menu/`
+    `/restaurant/api/menu/id` replace id with the corresponding number
+    `/restaurant/api/booking/tables/`
     `/auth/users/`
     `/api-token-auth/` not meant for retrieving (GET). make POST calls with this in Insomnia instead to get token
     `/auth/token/login/` token create
