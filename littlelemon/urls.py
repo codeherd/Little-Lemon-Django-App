@@ -31,4 +31,5 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('api-token-auth/', obtain_auth_token),
     path('api-auth/', include('rest_framework.urls')), #enables login/logout UI
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="login-container">
+    {% if user.is_authenticated %}
+        <h2>Welcome, {{ user.username }}!</h2>
+        <p>You are currently logged in.</p>
+        <p>
+            <form method="post" action="{% url 'logout' %}" style="display: inline;"> {# Use inline style or CSS to make it look like a link if desired #}
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; padding: 0; color: blue; text-decoration: underline; cursor: pointer;">Log Out</button>
+            </form>
+        </p>
+    {% else %}
+        <h2>Login</h2>
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="error-messages">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help-text">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit">Log In</button>
+            <input type="hidden" name="next" value="{{ next }}" />
+        </form>
+
+        <!-- <p>
+            <a href="{% url 'password_reset' %}">Forgot password?</a>
+        </p> -->
+    {% endif %}
+</div>
+
+{% endblock content %}

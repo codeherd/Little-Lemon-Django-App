@@ -36,17 +36,14 @@
       <!--End col-->
 
       <!--Begin col-->
-      <div class="column">
+      <!-- <div class="column">
         <h2>Bookings For <span id="today"></span></h2>
         <div id="bookings">
         </div>
-      </div>
+      </div> -->
       <!--End col-->
     </div>
     <!--End row-->
-
-
-
 
   </article>
 </section>
@@ -66,19 +63,24 @@
   function getBookings() {
     let reserved_slots = []
     const date = document.getElementById('reservation_date').value
-    document.getElementById('today').innerHTML = date
+    const todaySpan = document.getElementById('today');
+    if (todaySpan) {
+        todaySpan.innerHTML = date;
+    }
     
     fetch("{% url 'bookings' %}" + '?date=' + date)
       .then(r => r.json())
       .then(data => {
         reserved_slots = []
-        bookings = ''
+        let bookings = ''
         
         /* Step 11: Part three */
         for (const item of data) {
           console.log(item.fields)
           reserved_slots.push(item.fields.reservation_slot)
-          bookings += `<p>${item.fields.Name} - ${formatTime(item.fields.reservation_slot)}</p>`
+          if (document.getElementById('bookings')) {
+              bookings += `<p>${item.fields.Name} - ${formatTime(item.fields.reservation_slot)}</p>`
+          }
         }
 
         /* Step 12: Part four  */
@@ -93,11 +95,15 @@
         }
         
         document.getElementById('reservation_slot').innerHTML = slot_options
-        if(bookings==''){
-          bookings = "No bookings"
+        const bookingsDiv = document.getElementById('bookings');
+        if(bookingsDiv){
+            if(bookings === ''){
+                bookings = "No bookings"
+            }
+            bookingsDiv.innerHTML = bookings
         }
-        document.getElementById('bookings').innerHTML = bookings
       })
+      .catch(error => console.error('Error fetching bookings:', error));
   }
 
   function formatTime(time) {
@@ -107,7 +113,6 @@
     return label
   }
 
-
   document.getElementById('button').addEventListener('click', function (e) {
     const formdata = {
       Name: document.getElementById('Name').value,
@@ -116,12 +121,23 @@
       reservation_slot: document.getElementById('reservation_slot').value,
     }
 
-    fetch("{% url 'bookings' %}", { method: 'post', body: JSON.stringify(formdata) })
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch("{% url 'bookings' %}", {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify(formdata)
+    })
       .then(r => r.text())
       .then(data => {
         getBookings()
       })
+      .catch(error => console.error('Error submitting reservation:', error));
   })
 </script>
 {% endblock %}
+
 
