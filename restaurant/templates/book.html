@@ -4,13 +4,10 @@
 <section>
   <article>
     <h1>Make a reservation</h1>
-    <!--Begin row-->
     <div class="row">
-      <!--Begin col-->
       <div class="column">
           {% csrf_token %}
           <form method="POST" id="form">
-            <!-- {% csrf_token %} -->
             <p>
               <label for="Name">Name:</label>
               <input type="text" placeholder="Your Name" maxlength="200" required="" id="Name">
@@ -20,9 +17,8 @@
               <input type="number" placeholder="Number of guests" min="1" max="10" required="" id="No_of_guests">
             </p>
             <p>
-              <!-- Step 9: Part one -->
               <label for="reservation_date">Reservation date:</label>
-              <input type="date" id="reservation_date" required="" id="reservation_date">
+              <input type="date" id="reservation_date" required="">
             </p>
             <p>
               <label for="reservation_slot">Reservation time:</label>
@@ -30,96 +26,122 @@
                 <option value="0" disabled>Select time</option>
               </select>
             </p>
-            <button type="button" id="button">Reserve</button>
+            <button type="button" id="button">Book Now</button>
           </form>
       </div>
-      <!--End col-->
-
-      <!--Begin col-->
-      <!-- <div class="column">
+      {% if is_admin_or_manager %}
+      <div class="column">
         <h2>Bookings For <span id="today"></span></h2>
         <div id="bookings">
         </div>
-      </div> -->
-      <!--End col-->
-    </div>
-    <!--End row-->
-
-  </article>
+      </div>
+      {% endif %}
+      </div>
+    </article>
 </section>
 <script>
 
-  const date = new Date()
-  document.getElementById('reservation_date').value = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate().toString().padStart(2, "0")}`
+  const dateInput = document.getElementById('reservation_date');
+  const today = new Date(); // get current date and time
+  
+  // format today's date as YYYY-MM-DD
+  const todayString = today.getFullYear() + '-' + 
+                      String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(today.getDate()).padStart(2, '0');
+  
+  dateInput.setAttribute('min', todayString);
+  
+  dateInput.value = todayString;
 
-  console.log(document.getElementById('reservation_date').value)
-  getBookings()
+  getBookings(); 
 
-  /* Step 10: Part two */
-  document.getElementById('reservation_date').addEventListener('change', function (e) {
-    getBookings()
-  })
+  // (to refresh slots)
+  dateInput.addEventListener('change', function (e) {
+    getBookings();
+  });
 
+  // function to fetch and display bookings/slots
   function getBookings() {
-    let reserved_slots = []
-    const date = document.getElementById('reservation_date').value
+    let reserved_slots = [];
+    const selectedDate = dateInput.value;
     const todaySpan = document.getElementById('today');
-    if (todaySpan) {
-        todaySpan.innerHTML = date;
+    if (todaySpan) { 
+        todaySpan.innerHTML = selectedDate;
     }
     
-    fetch("{% url 'bookings' %}" + '?date=' + date)
+    fetch("{% url 'bookings' %}" + '?date=' + selectedDate)
       .then(r => r.json())
       .then(data => {
-        reserved_slots = []
-        let bookings = ''
+        reserved_slots = []; 
+        let bookings = '';
         
-        /* Step 11: Part three */
         for (const item of data) {
-          console.log(item.fields)
-          reserved_slots.push(item.fields.reservation_slot)
-          if (document.getElementById('bookings')) {
-              bookings += `<p>${item.fields.Name} - ${formatTime(item.fields.reservation_slot)}</p>`
+          reserved_slots.push(item.fields.reservation_slot);
+          if (document.getElementById('bookings')) { 
+              bookings += `<p>${item.fields.Name} - ${formatTime(item.fields.reservation_slot)} - ${item.fields.reservation_date}</p>`;
           }
         }
 
-        /* Step 12: Part four  */
-        let slot_options = '<option value="0" disabled>Select time</option>'
+        let slot_options = '<option value="0" disabled selected>Select time</option>';
         for (let i = 10; i < 20; i++) {
-          const label = formatTime(i)
+          const label = formatTime(i);
           if (reserved_slots.includes(i)) {
-            slot_options += `<option value=${i} disabled>${label}</option>`
+            slot_options += `<option value=${i} disabled>${label}</option>`;
           } else {
-            slot_options += `<option value=${i}>${label}</option>`
+            slot_options += `<option value=${i}>${label}</option>`;
           }
         }
         
-        document.getElementById('reservation_slot').innerHTML = slot_options
+        document.getElementById('reservation_slot').innerHTML = slot_options;
         const bookingsDiv = document.getElementById('bookings');
         if(bookingsDiv){
             if(bookings === ''){
-                bookings = "No bookings"
+                bookings = "No bookings";
             }
-            bookingsDiv.innerHTML = bookings
+            bookingsDiv.innerHTML = bookings;
         }
       })
       .catch(error => console.error('Error fetching bookings:', error));
   }
 
+  // Helper function to format time (e.g., 10 => 10 AM)
   function formatTime(time) {
-    const ampm = time < 12 ? 'AM' : 'PM'
-    const t = time < 12 ? time : time > 12 ? time - 12 : time
-    const label = `${t} ${ampm}`
-    return label
+    const ampm = time < 12 ? 'AM' : 'PM';
+    const t = time < 12 ? time : time > 12 ? time - 12 : time;
+    const label = `${t} ${ampm}`;
+    return label;
   }
 
   document.getElementById('button').addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // --- front-end validation: check if selected date is in the past ---
+    const currentLocalDateAtMidnight = new Date();
+    currentLocalDateAtMidnight.setHours(0, 0, 0, 0); // set to midnight
+
+    const selectedDateStr = dateInput.value;
+
+    // parse the YYYY-MM-DD string into components
+    const parts = selectedDateStr.split('-');
+    // month is 0-indexed in javascript date constructor (0 for january, 11 for december)
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // subtract 1 for 0-indexed month
+    const day = parseInt(parts[2], 10);
+
+    const selectedDateObj = new Date(year, month, day); // This creates it in local time at midnight
+
+    if (selectedDateObj < currentLocalDateAtMidnight) {
+        alert('Cannot book a reservation for a past date. Please select a current or future date.');
+        return;
+    }
+    // --- front-end validation ---
+
     const formdata = {
       Name: document.getElementById('Name').value,
       No_of_guests: document.getElementById('No_of_guests').value,
-      reservation_date: document.getElementById('reservation_date').value,
+      reservation_date: selectedDateStr, // Use the YYYY-MM-DD string
       reservation_slot: document.getElementById('reservation_slot').value,
-    }
+    };
 
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -131,13 +153,26 @@
         },
         body: JSON.stringify(formdata)
     })
-      .then(r => r.text())
+      .then(r => r.json())
       .then(data => {
-        getBookings()
+        if (data.error) {
+            alert('Booking failed: ' + data.error);
+        } else if (data.success) {
+            alert('Booking successful!');
+            // Refresh bookings display and slots after successful booking
+            if (document.getElementById('bookings')) { 
+                getBookings();
+            } else {
+                getBookings(); // Refresh slots for non-admin users
+            }
+            document.getElementById('Name').value = '';
+            document.getElementById('No_of_guests').value = '';
+        }
       })
-      .catch(error => console.error('Error submitting reservation:', error));
-  })
+      .catch(error => {
+        console.error('Error submitting reservation:', error);
+        alert('An unexpected error occurred during booking. Please try again.');
+      });
+  });
 </script>
 {% endblock %}
-
-
