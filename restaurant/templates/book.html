@@ -115,26 +115,51 @@
   document.getElementById('button').addEventListener('click', function (e) {
     e.preventDefault();
 
+    // --- front-end validation for Name field ---
+    const nameInput = document.getElementById('Name').value.trim();
+    if (nameInput.length < 3) {
+      alert('Please enter your name.')
+      return;
+    }
+
+    // --- front-end validation for Guests field ---
+    const guestsInput = document.getElementById('No_of_guests').value.trim();
+    const guests = Number(guestsInput);
+    if (!Number.isInteger(guests) || guests < 1 || guests > 10) {
+      alert('Guests field must be a number between 1 and 10.')
+      return;
+    }
+
+    // --- front-end validation for date field ---
+    const selectedDateStr = document.getElementById('reservation_date').value.trim();
+    if (!selectedDateStr) {
+      alert('Please select a reservation date');
+      return;
+    }
+
+    // --- front-end validation for time field ---
+    const selectedSlot = document.getElementById('reservation_slot').value.trim();
+    if (!selectedSlot || selectedSlot === "0") {
+      alert('Please select a reservation time');
+      return;
+    }
+
     // --- front-end validation: check if selected date is in the past ---
     const currentLocalDateAtMidnight = new Date();
     currentLocalDateAtMidnight.setHours(0, 0, 0, 0); // set to midnight
-
-    const selectedDateStr = dateInput.value;
-
     // parse the YYYY-MM-DD string into components
     const parts = selectedDateStr.split('-');
     // month is 0-indexed in javascript date constructor (0 for january, 11 for december)
     const year = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1; // subtract 1 for 0-indexed month
     const day = parseInt(parts[2], 10);
-
     const selectedDateObj = new Date(year, month, day); // This creates it in local time at midnight
-
+    
     if (selectedDateObj < currentLocalDateAtMidnight) {
         alert('Cannot book a reservation for a past date. Please select a current or future date.');
         return;
     }
-    // --- front-end validation ---
+    // --- end of validation above ---
 
     const formdata = {
       Name: document.getElementById('Name').value,

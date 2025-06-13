@@ -51,10 +51,31 @@ def bookings(request):
     if request.method == 'POST':
         data = json.load(request)
         
-        reservation_date_str = data['reservation_date']
-        reservation_slot_int = data['reservation_slot']
+        # --- back-end validation for Name field ---
+        name = data.get('Name', '').strip()
+        if not name or len(name) < 3:
+            return JsonResponse({'error': 'Name is required and must be at least 3 characters.'}, status=400)
 
-        # --- backend validation for past dates ---
+        # --- back-end validation for Guests field ---
+        guests_Number = data.get('No_of_guests', '').strip()
+        if not guests_Number.isdigit() or not (1 <= int(guests_Number) <= 10):
+            return JsonResponse({'error': 'Number of guests must be an integer between 1 and 10.'}, status=400)
+
+        # --- back-end validation for Date field ---
+        reservation_date_str = data.get('reservation_date', '').strip()
+        if not reservation_date_str:
+            return JsonResponse({'error': 'Reservation date is required.'}, status=400)
+
+        # --- back-end validation for Time field ---
+        reservation_slot_int = str(data.get('reservation_slot', '')).strip()
+        if reservation_slot_int in [None, '', 0, '0']:
+            return JsonResponse({'error': 'Reservation time is required.'}, status=400)
+        try:
+            reservation_slot_int = int(reservation_slot_int)
+        except ValueError:
+            return JsonResponse({'error': 'Reservation time must be a valid number.'}, status=400)
+
+        # --- back-end validation for past dates ---
         try:
             selected_date_obj = datetime.strptime(reservation_date_str, '%Y-%m-%d').date()
         except ValueError:
@@ -64,8 +85,7 @@ def bookings(request):
 
         if selected_date_obj < today_date:
             return JsonResponse({'error': 'Cannot book a reservation for a past date.'}, status=400)
-        # --- backend validation ---
-
+        
         field_type = Booking._meta.get_field('reservation_date').get_internal_type()
 
         save_value_for_reservation_date = selected_date_obj
@@ -89,6 +109,8 @@ def bookings(request):
             return JsonResponse({'success': 'Booking created successfully!'})
         else:
             return JsonResponse({'error': 'This slot is already booked for the selected date.'}, status=409) # 409 conflict
+
+        # --- end of validation above ---
 
     requested_date_str = request.GET.get('date')
 
